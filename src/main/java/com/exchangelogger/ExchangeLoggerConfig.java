@@ -20,11 +20,11 @@ public interface ExchangeLoggerConfig extends Config
 
 	@ConfigItem(
 		position = 2,
-		keyName = "rewriteLog",
-		name = "Rewrite Log",
+		keyName = "oneFile",
+		name = "One File",
 		description = "Delete old log data when using the plugin in a new session"
 	)
-	default boolean rewriteLog()
+	default boolean oneFile()
 	{
 		return false;
 	}

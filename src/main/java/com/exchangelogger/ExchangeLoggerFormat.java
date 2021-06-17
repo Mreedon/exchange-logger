@@ -24,32 +24,11 @@
  */
 package com.exchangelogger;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
-
-@ConfigGroup("exchangelogger")
-public interface ExchangeLoggerConfig extends Config
+public enum ExchangeLoggerFormat
 {
-	@ConfigItem(
-		position = 1,
-		keyName = "logFormat",
-		name = "Log Format",
-		description = "Select format for the log output"
-	)
-	default ExchangeLoggerFormat logFormat()
-	{
-		return ExchangeLoggerFormat.TEXT;
-	}
+	TEXT,
 
-	@ConfigItem(
-		position = 2,
-		keyName = "rewriteLog",
-		name = "One File",
-		description = "Rewrite old log data when using the plugin in a new session"
-	)
-	default boolean rewriteLog()
-	{
-		return false;
-	}
+	TABULAR,
+
+	JSON
 }

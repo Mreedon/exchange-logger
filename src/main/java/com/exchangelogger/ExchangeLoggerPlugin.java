@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2021, Anton <https://github.com/istid>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.exchangelogger;
 
 import com.google.inject.Provides;
@@ -5,16 +29,19 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.GrandExchangeOfferChanged;
+import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+import java.io.File;
+
 @Slf4j
 @PluginDescriptor(
 	name = "Exchange Logger",
-	description = "Stores all GE transactions in a log file"
+	description = "Stores all GE transactions in log file(s)"
 )
 public class ExchangeLoggerPlugin extends Plugin
 {
@@ -25,25 +52,23 @@ public class ExchangeLoggerPlugin extends Plugin
 	private ExchangeLoggerConfig config;
 
 	public static final String CONFIG_GROUP = "exchangelogger";
-	private final String fileType = ".log";
+	private ExchangeLoggerFormat format;
 	private boolean rewrite;
 	public String logPath;
+
 	private ExchangeLoggerWriter writer;
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		rewrite = config.oneFile(); //Add to construct
-		logPath = config.filePath();
+		format = config.logFormat();
+		rewrite = config.rewriteLog();
 
-		writer = new ExchangeLoggerWriter(logPath);
-/*
-		System.out.println("Creating file obj");
-		File file = new File("test\\temp.txt");
-		System.out.println("File exist: " + file.isFile());
-		System.out.println("File name: " + file.getName());
-		file.renameTo(new File("test\\bajs.txt"));
-		System.out.println("File path: " + file.toString());*/
+		String dir = RuneLite.RUNELITE_DIR.getPath() + "\\exchange-logger";
+		new File(dir).mkdirs();
+		logPath = dir + "\\exchange.log";
+
+		writer = new ExchangeLoggerWriter(logPath, format, rewrite);
 	}
 
 	@Override
@@ -57,29 +82,27 @@ public class ExchangeLoggerPlugin extends Plugin
 	{
 		if (event.getGroup().equals(CONFIG_GROUP))
 		{
-			if (event.getKey().equals("filePath"))
+			if (event.getKey().equals("logFormat"))		//Change log file output format
 			{
-				System.out.println("Config changed: filepath");
-				if (!logPath.equals(config.filePath()))	//File path changed
-				{
-					logPath = config.filePath();
-					writer.changePath(logPath);					//remove old log and create a new one
-				}	//handle path typo? \\ etc
+				format = config.logFormat();
+				writer.setFormat(format);
 			}
-			else if (event.getKey().equals("rewriteLog"))
-			{	//Delete all old data when logging in. Only uses one log file
+			else if (event.getKey().equals("rewriteLog"))	//Delete all old data when logging in. Only uses one log file
+			{
+				rewrite = config.rewriteLog();
+				writer.setRewrite(rewrite);
 
-			}	//Should be changed to ONE log file, resets on startup
+			}
 		}
 	}
 
 	@Subscribe
 	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged offerEvent)
 	{
+		// Trades are cleared by the client during LOGIN_SCREEN/HOPPING/LOGGING_IN, ignore those
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
-			// Trades are cleared by the client during LOGIN_SCREEN/HOPPING/LOGGING_IN, ignore those
-			writer.GrandExchangeEvent(offerEvent);
+			writer.grandExchangeEvent(offerEvent);
 		}
 	}
 

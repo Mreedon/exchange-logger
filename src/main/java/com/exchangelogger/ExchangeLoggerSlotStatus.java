@@ -24,32 +24,17 @@
  */
 package com.exchangelogger;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
+import net.runelite.api.GrandExchangeOfferState;
 
-@ConfigGroup("exchangelogger")
-public interface ExchangeLoggerConfig extends Config
+public class ExchangeLoggerSlotStatus
 {
-	@ConfigItem(
-		position = 1,
-		keyName = "logFormat",
-		name = "Log Format",
-		description = "Select format for the log output"
-	)
-	default ExchangeLoggerFormat logFormat()
-	{
-		return ExchangeLoggerFormat.TEXT;
-	}
-
-	@ConfigItem(
-		position = 2,
-		keyName = "rewriteLog",
-		name = "One File",
-		description = "Rewrite old log data when using the plugin in a new session"
-	)
-	default boolean rewriteLog()
-	{
-		return false;
-	}
+	String date;
+	String time;
+	GrandExchangeOfferState state;
+	int slot;
+	int item;
+	int qty;
+	int worth;
+	int max;
+	int offer;
 }

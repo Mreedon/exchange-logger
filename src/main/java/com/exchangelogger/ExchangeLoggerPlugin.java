@@ -35,7 +35,6 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-
 import java.io.File;
 
 @Slf4j
@@ -51,6 +50,9 @@ public class ExchangeLoggerPlugin extends Plugin
 	@Inject
 	private ExchangeLoggerConfig config;
 
+	private final String dirName = "\\exchange-logger";
+	private final String logName = "\\exchange.log";
+
 	public static final String CONFIG_GROUP = "exchangelogger";
 	private ExchangeLoggerFormat format;
 	private boolean rewrite;
@@ -64,9 +66,9 @@ public class ExchangeLoggerPlugin extends Plugin
 		format = config.logFormat();
 		rewrite = config.rewriteLog();
 
-		String dir = RuneLite.RUNELITE_DIR.getPath() + "\\exchange-logger";
+		String dir = RuneLite.RUNELITE_DIR.getPath() + dirName;
 		new File(dir).mkdirs();
-		logPath = dir + "\\exchange.log";
+		logPath = dir + logName;
 
 		writer = new ExchangeLoggerWriter(logPath, format, rewrite);
 	}

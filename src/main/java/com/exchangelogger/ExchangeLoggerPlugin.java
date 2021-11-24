@@ -50,8 +50,8 @@ public class ExchangeLoggerPlugin extends Plugin
 	@Inject
 	private ExchangeLoggerConfig config;
 
-	private final String dirName = "\\exchange-logger";
-	private final String logName = "\\exchange.log";
+	private final String dirName = File.separator + "exchange-logger";
+	private final String logName = File.separator + "exchange.log";
 
 	public static final String CONFIG_GROUP = "exchangelogger";
 	private ExchangeLoggerFormat format;
